@@ -11,6 +11,7 @@ from src.util.helpers import exp_weights
 from src.features.rolling_features import rolling_stats
 from src.features.composite_features import competitor_composite
 from src.util.helpers import safe_kw
+from src.util.helpers import next_quarter_str
 
 def build_feature_frame(df):
     """
@@ -85,7 +86,7 @@ def build_feature_frame(df):
                 if comp_name == TARGET:
                     continue
 
-                col = f"{comp_name}__{safe}_count"
+                col = f"{comp_name}_{safe}_count"
                 if col not in df.columns:
                     # no competitor data for this kw
                     row_features[f"{safe}_{comp_name}_composite"] = 0.0
@@ -111,3 +112,58 @@ def build_feature_frame(df):
 
     df_features = pd.DataFrame(feature_rows)
     return df_features
+
+
+def build_future_base_row(df):
+    """
+    Create a synthetic future-Quarter row for df (wide),
+    containing:
+      - quarter: next quarter string
+      - file_target: "PREDICT"
+      - eps_surprise_pct_target: 0
+      - sin/cos season for next t
+      - all keyword_count = 0 (since transcript not written yet)
+      - all firstpos = 1.0
+      - all density = 0.0
+      - competitor counts = 0
+      - trends = last known or 0
+    """
+
+    last_row = df.iloc[-1]
+    next_q   = next_quarter_str(last_row["quarter"])
+
+    next_t   = int(last_row["t"]) + 1
+
+    sin_next = np.sin(2*np.pi*next_t/4)
+    cos_next = np.cos(2*np.pi*next_t/4)
+
+    row = {
+        "file_target": "PREDICT",
+        "quarter": next_q,
+        "eps_surprise_pct": 0.0,
+        "t": next_t,
+        "sin_season": sin_next,
+        "cos_season": cos_next,
+    }
+
+    # all keyword counts = 0
+    for kw in CANONICAL_KEYWORDS:
+        safe = safe_kw(kw)
+        row[f"{safe}_count"] = 0
+        row[f"{safe}_firstpos"] = 1.0
+        row[f"{safe}_density"] = 0.0
+
+        # trends (repeat last known)
+        trend_col = f"trend_{TARGET.lower()}_{safe}"
+        row[trend_col] = last_row.get(trend_col, 0.0)
+
+    # competitor counts must exist for build_feature_frame
+    for comp in COMPETITORS:
+        if comp == TARGET:
+            continue
+        prefix = f"{comp}__"
+        for kw in CANONICAL_KEYWORDS:
+            safe = safe_kw(kw)
+            row[f"{prefix}{safe}_count"] = 0.0
+
+    return row

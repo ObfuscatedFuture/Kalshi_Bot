@@ -23,3 +23,16 @@ def red(text):
 
 def safe_kw(kw: str) -> str:
     return kw.lower().replace(" ", "_")
+
+def next_quarter_str(qstr: str) -> str:
+    """
+    Convert '1Q21' → '2Q21', '4Q24' → '1Q25'.
+    Assumes format '<digit>Q<yy>'.
+    """
+    q = int(qstr[0])         # 1, 2, 3, 4
+    year = int(qstr[2:])     # e.g. '21' → 21
+
+    if q < 4:
+        return f"{q+1}Q{year:02d}"
+    else:
+        return f"1Q{year+1:02d}"

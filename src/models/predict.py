@@ -5,6 +5,7 @@ from config.keyword import CANONICAL_KEYWORDS
 from src.models.train import get_feature_cols_for_keyword
 
 
+
 def predict_next_quarter(models, df_features_long):
     """
     Predict the most recent quarter for every keyword.
@@ -35,3 +36,5 @@ def predict_next_quarter(models, df_features_long):
         predictions[kw] = float(prob)
 
     return predictions
+
+

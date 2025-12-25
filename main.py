@@ -1,27 +1,21 @@
 import pandas as pd
 
-from config.companies import COMPANIES, TARGET, COMPETITORS
-from config.keyword import CANONICAL_KEYWORDS
-from src.ingest.keyword_counts import build_company_counts
+from projects.earnings_calls.config.companies import COMPANIES, TARGET, COMPETITORS
+from core.ingest.keyword_counts import build_company_counts
 from src.align.align_competitors import align_competitor_to_target
-from src.features.make_feature_df import build_feature_frame
-from src.models.train import train_keyword_models
-from src.models.predict import predict_next_quarter
-from src.models.evaluate import (
+from core.features.make_feature_df import build_feature_frame
+from core.models.train import train_keyword_models
+from core.models.predict import predict_next_quarter
+from core.models.evaluate import (
     evaluate_loocv,
     compute_all_forecast_cis,
     run_lofo
 )
-from src.util.helpers import quarter_to_year_q
+from core.util.helpers import quarter_to_year_q
 import numpy as np
-from src.util.helpers import red, green, yellow
-from src.ingest.keyword_counts import safe_kw
+from core.util.helpers import red, green, yellow
 from src.trends.fetch_trends import build_all_trends_per_quarter
-from src.models.bayes_hierarchical import train_bayesian
-from src.models.bayes_hierarchical import predict_bayes_next_quarter
-from src.features.make_feature_df import build_future_base_row
-from src.util.helpers import next_quarter_str
-from src.features.wide_to_long import wide_to_long
+from core.features.wide_to_long import wide_to_long
 
 
 def run_pipeline():
@@ -78,11 +72,7 @@ def run_pipeline():
     df["cos_season"] = np.cos(2 * np.pi * df["t"] / 4)
 
 
-    future_row = build_future_base_row(df)
-    df2 = pd.concat([df, pd.DataFrame([future_row])], ignore_index=True)
-
     df_features = build_feature_frame(df)
-    df_bhlr_features = build_feature_frame(df2)
     df_features.to_csv("keyword_feature_wide.csv", index=False)
 
     # --------------------------------------------
@@ -90,18 +80,12 @@ def run_pipeline():
     # --------------------------------------------
     
     df_long = wide_to_long(df_features)
-    df_long2 = wide_to_long(df_bhlr_features)
-    df_long2.to_csv("keyword_feature_long.csv", index=False)
+    df_long.to_csv("keyword_feature_long.csv", index=False)
 
     # --------------------------------------------
     # 5. Train models
     # --------------------------------------------
     models = train_keyword_models(df_long)
-
-    bayes_model, bayes_trace, bayes_scaler = train_bayesian(df_long, mode="nuts_fast")
-
-    future_q = df_bhlr_features["quarter"].iloc[-1]
-    df_next_long = df_long2[df_long2["quarter"] == future_q].reset_index(drop=True)
 
 
     # --------------------------------------------
@@ -109,13 +93,6 @@ def run_pipeline():
     # --------------------------------------------
     preds = predict_next_quarter(models, df_long)
 
-    bayes_preds = predict_bayes_next_quarter(
-        bayes_model,
-        bayes_trace,
-        bayes_scaler,
-        df_next_long
-    )
-    
     def pretty_print_predictions(preds):
         print("\n==================== LOGISTIC REGRESSION PREDICTIONS ====================\n")
         print(f"{'KEYWORD':<20} | {'PROB (%)':>8}")
@@ -135,21 +112,9 @@ def run_pipeline():
 
         print("\n===========================================================\n")
     
-    def pretty_print_bayes(preds):
-        print("\n===== HIERARCHICAL BAYES PREDICTIONS =====\n")
-        for kw, r in preds.items():
-            mean = r["mean"] * 100
-            lo = r["ci_low"] * 100
-            hi = r["ci_high"] * 100
-            print(f"{kw:<15}  {mean:6.2f}%   (CI: {lo:5.2f}% – {hi:5.2f}%)")
-        print("\n==========================================\n")
-
-
     print("\n=== NEXT QUARTER PREDICTIONS ===")
 
     pretty_print_predictions(preds)
-
-    pretty_print_bayes(bayes_preds)
 
     # --------------------------------------------
     # 7. LOOCV evaluation

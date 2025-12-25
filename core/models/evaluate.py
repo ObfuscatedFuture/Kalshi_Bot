@@ -6,12 +6,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import brier_score_loss, log_loss
 
-from config.keyword import CANONICAL_KEYWORDS
-from config.parameters import (
+from projects.earnings_calls.config.keyword import CANONICAL_KEYWORDS
+from projects.earnings_calls.config.parameters import (
     MIN_POSITIVES, MIN_NEGATIVES,
     LOGISTIC_C
 )
-from src.models.train import get_feature_cols_for_keyword
+from core.models.train import get_feature_cols_for_keyword
 
 
 # ============================================================

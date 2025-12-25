@@ -4,13 +4,13 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
-from config.keyword import CANONICAL_KEYWORDS
-from config.companies import COMPETITORS, TARGET
-from config.parameters import (
+from projects.earnings_calls.config.keyword import CANONICAL_KEYWORDS
+from projects.earnings_calls.config.companies import COMPETITORS, TARGET
+from projects.earnings_calls.config.parameters import (
     LOGISTIC_C, PRIORS,
     MIN_POSITIVES, MIN_NEGATIVES
 )
-from src.util.helpers import safe_kw
+from core.util.helpers import safe_kw
 
 
 def get_feature_cols_for_keyword(kw):

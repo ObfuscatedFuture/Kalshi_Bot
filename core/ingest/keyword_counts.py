@@ -3,10 +3,10 @@
 import os
 import pandas as pd
 import re
-from config.keyword import RAW_KEYWORDS, SYNONYM_MAP
-from src.ingest.loader import load_cleaned_transcript
-from src.util.helpers import quarter_to_year_q
-from src.util.helpers import safe_kw
+from projects.earnings_calls.config.keyword import RAW_KEYWORDS, SYNONYM_MAP
+from core.ingest.loader import load_cleaned_transcript
+from core.util.helpers import quarter_to_year_q
+from core.util.helpers import safe_kw
 
 def keyword_stats(text, keywords):
     words = text.split()

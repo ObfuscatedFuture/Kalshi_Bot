@@ -4,10 +4,10 @@ import os
 import pandas as pd
 from pytrends.request import TrendReq
 
-from config.keyword import TRENDS_SYNONYMS, CANONICAL_KEYWORDS
-from config.companies import REPORT_DATES, TARGET
-from src.util.date_windows import get_trends_window
-from src.util.helpers import safe_kw
+from projects.earnings_calls.config.keyword import TRENDS_SYNONYMS, CANONICAL_KEYWORDS
+from projects.earnings_calls.config.companies import REPORT_DATES, TARGET
+from core.util.date_windows import get_trends_window
+from core.util.helpers import safe_kw
 
 # ---------------------------------------------
 # PyTrends session

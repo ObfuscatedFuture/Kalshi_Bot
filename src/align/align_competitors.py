@@ -1,7 +1,7 @@
 # src/align/align_competitors.py
 
 import pandas as pd
-from config.companies import get_report_date
+from projects.earnings_calls.config.companies import get_report_date
 
 def align_competitor_to_target(comp_name, target_name, df_comp, df_target):
     target_dates = sorted([

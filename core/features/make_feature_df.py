@@ -3,15 +3,15 @@
 import numpy as np
 import pandas as pd
 
-from config.keyword import CANONICAL_KEYWORDS
-from config.companies import COMPETITORS, TARGET
-from config.parameters import DECAY_W4, DECAY_W8, DECAY_W10
+from projects.earnings_calls.config.keyword import CANONICAL_KEYWORDS
+from projects.earnings_calls.config.companies import COMPETITORS, TARGET
+from projects.earnings_calls.config.parameters import DECAY_W4, DECAY_W8, DECAY_W10
 
-from src.util.helpers import exp_weights
-from src.features.rolling_features import rolling_stats
-from src.features.composite_features import competitor_composite
-from src.util.helpers import safe_kw
-from src.util.helpers import next_quarter_str
+from core.util.helpers import exp_weights
+from core.features.rolling_features import rolling_stats
+from core.features.composite_features import competitor_composite
+from core.util.helpers import safe_kw
+from core.util.helpers import next_quarter_str
 
 def build_feature_frame(df):
     """

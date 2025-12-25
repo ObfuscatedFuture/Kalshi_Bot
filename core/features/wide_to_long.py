@@ -2,10 +2,10 @@
 
 import pandas as pd
 
-from config.companies import TARGET, COMPETITORS
-from config.keyword import CANONICAL_KEYWORDS
+from projects.earnings_calls.config.companies import TARGET, COMPETITORS
+from projects.earnings_calls.config.keyword import CANONICAL_KEYWORDS
 
-from src.ingest.keyword_counts import safe_kw
+from core.ingest.keyword_counts import safe_kw
 
 def wide_to_long(df_features: pd.DataFrame) -> pd.DataFrame:
         """

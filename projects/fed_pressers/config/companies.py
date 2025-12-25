@@ -1,95 +1,41 @@
 
 from datetime import datetime
+import os
+from pathlib import Path
+import re
 
-# Transcript paths
-snow_paths = [
-    'dataset/SNOW-earnings/1Q21-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/2Q21-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/3Q21-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/4Q21-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/1Q22-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/2Q22-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/3Q22-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/4Q22-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/1Q23-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/2Q23-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/3Q23-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/4Q23-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/1Q24-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/2Q24-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/3Q24-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/4Q24-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/1Q25-transcript-SNOW.pdf',
-    'dataset/SNOW-earnings/2Q25-transcript-SNOW.pdf'
-]
-hd_paths = [
-    'dataset/HD-earnings/1Q23-transcript-HD.pdf',
-    'dataset/HD-earnings/2Q23-transcript-HD.pdf',
-    'dataset/HD-earnings/3Q23-transcript-HD.pdf',
-    'dataset/HD-earnings/4Q23-transcript-HD.pdf',
-    'dataset/HD-earnings/1Q24-transcript-HD.pdf',
-    'dataset/HD-earnings/2Q24-transcript-HD.pdf',
-    'dataset/HD-earnings/3Q24-transcript-HD.pdf',
-    'dataset/HD-earnings/4Q24-transcript-HD.pdf',
-    'dataset/HD-earnings/1Q25-transcript-HD.pdf',
-    'dataset/HD-earnings/2Q25-transcript-HD.pdf',
-    'dataset/HD-earnings/3Q25-transcript-HD.pdf',
-]
+_DATASET_DIR = Path(__file__).resolve().parents[1] / "dataset"
+_QUARTER_RE = re.compile(r"(\d)Q(\d{2})")
 
-lowes_paths = [
-    'dataset/Lowe-earnings/1Q23-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/2Q23-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/3Q23-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/4Q23-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/1Q24-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/2Q24-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/3Q24-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/4Q24-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/1Q25-transcript-LOWE.pdf',
-    'dataset/Lowe-earnings/2Q25-transcript-LOWE.pdf'
-]
 
-target_paths = [
-    'dataset/Target-earnings/1Q23-transcript-TGT.pdf',
-    'dataset/Target-earnings/2Q23-transcript-TGT.pdf',
-    'dataset/Target-earnings/3Q23-transcript-TGT.pdf',
-    'dataset/Target-earnings/4Q23-transcript-TGT.pdf',
-    'dataset/Target-earnings/1Q24-transcript-TGT.pdf',
-    'dataset/Target-earnings/2Q24-transcript-TGT.pdf',
-    'dataset/Target-earnings/3Q24-transcript-TGT.pdf',
-    'dataset/Target-earnings/4Q24-transcript-TGT.pdf',
-    'dataset/Target-earnings/1Q25-transcript-TGT.pdf',
-    'dataset/Target-earnings/2Q25-transcript-TGT.pdf'
-]
+def _quarter_sort_key(filename):
+    match = _QUARTER_RE.search(filename)
+    if match:
+        return (int(match.group(2)), int(match.group(1)), filename)
+    return (9999, 99, filename)
 
-walmart_paths = [
-    'dataset/Walmart-earnings/1Q23-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/2Q23-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/3Q23-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/4Q23-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/1Q24-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/2Q24-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/3Q24-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/4Q24-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/1Q25-transcript-WMT.pdf',
-    'dataset/Walmart-earnings/2Q25-transcript-WMT.pdf'
-]
-salesforce_paths = [
-    'dataset/CRM-earnings/1Q22-transcript-CRM.pdf',
-    'dataset/CRM-earnings/2Q22-transcript-CRM.pdf',
-    'dataset/CRM-earnings/3Q22-transcript-CRM.pdf',
-    'dataset/CRM-earnings/4Q22-transcript-CRM.pdf',
-    'dataset/CRM-earnings/1Q23-transcript-CRM.pdf',
-    'dataset/CRM-earnings/2Q23-transcript-CRM.pdf',
-    'dataset/CRM-earnings/3Q23-transcript-CRM.pdf',
-    'dataset/CRM-earnings/4Q23-transcript-CRM.pdf',
-    'dataset/CRM-earnings/1Q24-transcript-CRM.pdf',
-    'dataset/CRM-earnings/2Q24-transcript-CRM.pdf',
-    "dataset/CRM-earnings/3Q24-transcript-CRM.pdf",
-    "dataset/CRM-earnings/4Q24-transcript-CRM.pdf",
-    "dataset/CRM-earnings/1Q25-transcript-CRM.pdf",
-    "dataset/CRM-earnings/2Q25-transcript-CRM.pdf"
-]   
+
+def _load_pdf_paths(subdir):
+    base = _DATASET_DIR / subdir
+    try:
+        with os.scandir(base) as entries:
+            filenames = [
+                entry.name
+                for entry in entries
+                if entry.is_file() and entry.name.lower().endswith(".pdf")
+            ]
+    except FileNotFoundError:
+        return []
+    filenames.sort(key=_quarter_sort_key)
+    return [str(base / name) for name in filenames]
+
+
+snow_paths = _load_pdf_paths("SNOW-earnings")
+hd_paths = _load_pdf_paths("HD-earnings")
+lowes_paths = _load_pdf_paths("Lowe-earnings")
+target_paths = _load_pdf_paths("Target-earnings")
+walmart_paths = _load_pdf_paths("Walmart-earnings")
+salesforce_paths = _load_pdf_paths("CRM-earnings")
 
 REPORT_DATES = {
     "snowflake": { # done

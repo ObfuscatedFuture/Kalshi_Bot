@@ -9,7 +9,7 @@ from core.ingest.keyword_counts import safe_kw
 
 def wide_to_long(df_features: pd.DataFrame) -> pd.DataFrame:
         """
-        Convert wide SNOW feature table (one row per quarter)
+        Convert wide feature table (one row per quarter)
         into long format (one row per quarter × keyword).
         """
         rows = []
